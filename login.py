@@ -63,11 +63,6 @@ class person(ABC):
                         
         except IdNotFound as error:
             print(error)
-            
-
-            
-
-
 
     @abstractmethod
     def print_info(self):
@@ -133,11 +128,10 @@ class Employee(person):
         print(f"{self.name} is an Employee")
 
 
-
-    
-u1 = User("U1", "Suha", "suhaariana@gmail.com", "12345678")
-u1.register()
-u1.login()
+if __name__ == '__main__':
+    u1 = User("U1", "Suha", "suhaariana@gmail.com", "12345678")
+    u1.register()
+    u1.login()
 
 
 
