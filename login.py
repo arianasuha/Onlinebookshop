@@ -15,24 +15,89 @@ class IdNotFound(Exception):
 
 from abc import ABC, abstractmethod  
 class person(ABC):
-    def __init__(self, id, name, email, password):
+    def __init__(self, id, name, email):
         self.id = id
         self.name = name
         self.email = email
-        self.password = password  #encapsulation
         print(f"Welcome to the Bookstore!")
 
     def register_check(self, id):
         if id == self.id:
             return
         raise IdNotFound("You need to register first")
+    
+    def check_password(self):   #12@gh678
+        digit = False
+        upper_charc = False
+        lower_charc = False
+        special_charc = False
+
+        if len(self.password) < 8:
+            print("Your password must contain atleast 8 characters")
+            self.password = input("Please Enter your password again: ")
+
+        for letter in self.password:
+            if 97 <= ord(letter) <= 122:
+                lower_charc = True
+            elif 65 <= ord(letter) <= 90:
+                upper_charc = True
+            elif 48 <= ord(letter) <= 57:
+                digit = True
+            else:
+                special_charc = True
+
+        if digit and upper_charc and lower_charc and special_charc:
+            return
+        
+        message = "Your password must contain atleast one"
+        if digit == False:
+            print(message, "numeric value")
+            self.correct_password("digit")
+        if upper_charc == False:
+            print(message, "uppercase character")
+            self.correct_password("upper_charc")
+        if lower_charc == False:
+            print(message, "lowercase character")
+            self.correct_password("lower_charc")
+        if special_charc == False:
+            print(message, "special character")
+            self.correct_password("special_charc")
+        
+
+    def correct_password(self, issue):
+        self.password = input("Enter your password again: ")
+        for i in self.password:
+            if issue == "lower_charc":
+                if 97 <= ord(i) <= 122:
+                    lower_charc = True
+                    return
+            elif issue == "upper_charc":
+                if 65 <= ord(i) <= 90:
+                    upper_charc = True
+                    return
+            elif issue == "digit":
+                if 48 <= ord(i) <= 57:
+                    digit = True
+                    return
+            elif issue == "special_charc":
+                if ord(i) in "!@#$%^&*?|><":
+                    special_charc = True
+                    return
+            
+
+        self.correct_password(issue)
+        
+        
+
 
 
     def register(self):
         if self.id in User.user_info or self.id in Employee.emp_info:
             print(f"This account is already registered")
             return
-    
+        
+        self.password = input("Enter your password: ")
+        self.check_password()
         if self.id[0] == "U":
             User.user_info[self.id] = (self.name, self.email, self.password)
         else:
@@ -82,8 +147,8 @@ class Book:
 #inheritence
 class User(person, Book):
     user_info = {}
-    def __init__(self, id, name, email, password):
-        super().__init__(id, name, email, password)
+    def __init__(self, id, name, email):
+        super().__init__(id, name, email)
         self.cart = []
 
 
@@ -113,8 +178,8 @@ class User(person, Book):
 
 class Employee(person):
     emp_info = {}
-    def __init__(self, id, name, email, password):
-        super().__init__(id, name, email, password)
+    def __init__(self, id, name, email):
+        super().__init__(id, name, email)
 
     def register(self):
         super().register()
@@ -129,9 +194,11 @@ class Employee(person):
 
 
 if __name__ == '__main__':
-    u1 = User("U1", "Suha", "suhaariana@gmail.com", "12345678")
-    u1.register()
-    u1.login()
+    # u1 = User("U1", "Suha", "suhaariana@gmail.com")
+    # u1.register()
+    # u1.login()
+    u2 = User("U2", "Suhana", "suhan@gmail.com")
+    u2.register()
 
 
 
