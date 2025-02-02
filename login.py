@@ -8,33 +8,33 @@
 #in method override process, we need to declare same name for both methods
 
 class IdNotFound(Exception):
-    
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+    pass
+
 
 from abc import ABC, abstractmethod  
-class person(ABC):
+class Person(ABC):
+    _password_list = []
     def __init__(self, id, name, email):
         self.id = id
         self.name = name
         self.email = email
-        print(f"Welcome to the Bookstore!")
+        print(f"Welcome {self.name}! Please Register your account.")
 
     def register_check(self, id):
         if id == self.id:
             return
         raise IdNotFound("You need to register first")
     
-    def check_password(self):   #12@gh678
+    def check_password(self):  
         digit = False
         upper_charc = False
         lower_charc = False
         special_charc = False
 
-        if len(self.password) < 8:
-            print("Your password must contain atleast 8 characters")
-            self.password = input("Please Enter your password again: ")
+        if self.password in Person._password_list:
+            print("This password already exists. Please set a different password")
+            self.password = input("Enter your password: ")
+
 
         for letter in self.password:
             if 97 <= ord(letter) <= 122:
@@ -46,8 +46,6 @@ class person(ABC):
             else:
                 special_charc = True
 
-        if digit and upper_charc and lower_charc and special_charc:
-            return
         
         message = "Your password must contain atleast one"
         if digit == False:
@@ -62,9 +60,16 @@ class person(ABC):
         if special_charc == False:
             print(message, "special character")
             self.correct_password("special_charc")
+        if len(self.password) < 8:
+            print("Your password must contain atleast 8 characters")
+            self.password = input("Please Enter your password again: ")
+
+        if digit and upper_charc and lower_charc and special_charc and len(self.password) >= 8:
+            return
         
 
     def correct_password(self, issue):
+        #using recursion
         self.password = input("Enter your password again: ")
         for i in self.password:
             if issue == "lower_charc":
@@ -80,7 +85,7 @@ class person(ABC):
                     digit = True
                     return
             elif issue == "special_charc":
-                if ord(i) in "!@#$%^&*?|><":
+                if i in "!@#$%^&*?|><":
                     special_charc = True
                     return
             
@@ -98,10 +103,16 @@ class person(ABC):
         
         self.password = input("Enter your password: ")
         self.check_password()
+        self.password2 = input("Please confirm your password: ")
+        if self.password != self.password2:
+            print("You have entered wrong password!\nPlease Try again")
+            self.password2 = input("Please Enter your password again: ")
+        Person._password_list.append(self.password)
+
         if self.id[0] == "U":
-            User.user_info[self.id] = (self.name, self.email, self.password)
+            User.user_info[self.id] = (self.name, self.email)
         else:
-            Employee.emp_info[self.id] = (self.name, self.email, self.password)
+            Employee.emp_info[self.id] = (self.name, self.email)
 
         print(f"Congratulations {self.name}! You have successfully registered.")
 
@@ -141,11 +152,22 @@ class Book:
         self.author = author
         self.price = price
         self.stock = stock
-        Book.book_dict[self.title] = self.price        
+        Book.book_dict[self.title] = [self.author, self.price, self.stock]
+        #used list as it is mutable and I need to change stock when a customer buys a book
+        print(Book.book_dict)
+
+
+    @classmethod
+    def discount_update(cls):
+        cls.discount = int(input("Enter value: "))
+        print("Discount has been updated")
+
+
+   
 
 
 #inheritence
-class User(person, Book):
+class User(Person, Book):
     user_info = {}
     def __init__(self, id, name, email):
         super().__init__(id, name, email)
@@ -154,13 +176,34 @@ class User(person, Book):
 
     def register(self):
         super().register()
+        
 
-    def add_to_cart(self, book, quantity):
-        if book.stock >= quantity:
-            self.cart.append([book.title, book.price])
-            print(f"{book} added to cart, {self.name}")
+    def search(self):
+        title = input("Please Enter the book title: ")
+
+        if title not in Book.book_dict:
+            print(f"{title} is not available")
+            return
+        
+        quantity = int(input("Please enter the quantity of product you want to purchase: "))
+        if Book.book_dict[title][2] == 0:
+            print(f"'{title}' is currently out of stock")
+        elif Book.book_dict[title][2] < quantity:
+            print(f"Available Quantity: {Book.book_dict[title][2]}")
         else:
-            print(f"Sorry, {book} is Out of stock!")
+            cart = input("Would like to add this on your cart?\nEnter 'Yes' if you want to add this to your cart: " )
+            if cart == "Yes":
+                self.add_to_cart(title, quantity)
+
+    def add_to_cart(self, title, quantity):
+        payable_amount = Book.book_dict[title][1] * quantity
+        if quantity >= 5:
+            payable_amount += Book.discount
+        Book.book_dict[title][2] = Book.book_dict[title][2] - 1
+        print(Book.book_dict)
+        print(f"{self.name}, {title} is added to your cart.\nYou need to pay {payable_amount} Tk.")
+
+
 
 
     @classmethod
@@ -176,7 +219,7 @@ class User(person, Book):
         pass
 
 
-class Employee(person):
+class Employee(Person):
     emp_info = {}
     def __init__(self, id, name, email):
         super().__init__(id, name, email)
@@ -198,7 +241,15 @@ if __name__ == '__main__':
     # u1.register()
     # u1.login()
     u2 = User("U2", "Suhana", "suhan@gmail.com")
-    u2.register()
+    # u2.register()
+    # u2.login()
+    b1 = Book("The Silent Patient", "Alex Michaidelis", 100, 2)
+    b2 = Book("Death on the Nile", "Agatha Christie", 200, 1)
+    b3 = Book("Da The Vinci Code", "Dan Brown", 300, 1)
+    print(Book.book_dict)
+    
+    
+   
 
 
 
